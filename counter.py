@@ -2,6 +2,7 @@
 
 import time
 from util.logger import get_logger
+from datetime import datetime, timedelta
 
 
 logger = get_logger()
@@ -66,7 +67,7 @@ def _has_crossed_counting_line(bbox, line):
         return True
     return False
 
-def attempt_count(blob, blob_id, counting_lines, counts):
+def attempt_count(blob, blob_id, counting_lines, counts, frames_processed, date_time_of_video, frame_rate, output ):
     '''
     Check if a blob has crossed a counting line.
     '''
@@ -80,7 +81,8 @@ def attempt_count(blob, blob_id, counting_lines, counts):
                 counts[label][blob.type] = 1
 
             blob.lines_crossed.append(label)
-
+            seconds_of_video = frames_processed/int(frame_rate)
+            datetime_of_event = date_time_of_video + timedelta(seconds=seconds_of_video)
             logger.info('Object counted.', extra={
                 'meta': {
                     'label': 'OBJECT_COUNT',
@@ -90,6 +92,10 @@ def attempt_count(blob, blob_id, counting_lines, counts):
                     'position_first_detected': blob.position_first_detected,
                     'position_counted': blob.centroid,
                     'counted_at':time.time(),
+                    'frame': frames_processed,
+                    'datetime_of_event': datetime_of_event.strftime("%Y-%m-%d, %H:%M:%S")
                 },
             })
+            output.writerow([datetime_of_event.strftime("%Y-%m-%d, %H:%M:%S"), blob.type, label, blob_id])
+
     return blob, counts

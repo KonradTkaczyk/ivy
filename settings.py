@@ -4,6 +4,7 @@ App settings.
 
 import os
 import ast
+from datetime import datetime
 
 
 ENVS_READY = True
@@ -15,6 +16,14 @@ if os.getenv('VIDEO'):
 else:
     print('Path to video file not set.')
     ENVS_READY = False
+
+if os.getenv('DATETIME'):
+    DATETIME = os.getenv('DATETIME')
+    DATETIME = datetime.strptime(DATETIME, '%y/%m/%d %H:%M:%S')
+
+
+if os.getenv('FRAME_RATE'):
+    FRAME_RATE = os.getenv('FRAME_RATE')
 
 # Specify a detection Region of Interest (ROI)
 # i.e a set of vertices that represent the area (polygon) where you want detections to be made

@@ -7,6 +7,8 @@ VCS entry point.
 import sys
 import time
 import cv2
+import datetime
+import csv
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -28,6 +30,8 @@ def run():
     '''
 
     video = settings.VIDEO
+    datetime = settings.DATETIME
+    frame_rate = settings.FRAME_RATE
     cap = cv2.VideoCapture(video)
     if not cap.isOpened():
         logger.error('Invalid video source %s', video, extra={
@@ -51,8 +55,13 @@ def run():
     show_counts = settings.SHOW_COUNTS
     hud_color = settings.HUD_COLOR
 
+    today = datetime.now()
+    date_time = today.strftime("%Y-%m-%d, %H-%M-%S")
+    filename = date_time + "-Log.csv"
+    output = csv.writer(open(filename, 'w'))
+    output.writerow(['datetime_of_event', 'type','counting_line', 'id' ])
     object_counter = ObjectCounter(frame, detector, tracker, droi, show_droi, mcdf, mctf,
-                                   detection_interval, counting_lines, show_counts, hud_color)
+                                   detection_interval, counting_lines, show_counts, hud_color,datetime,frame_rate, output)
 
     record = settings.RECORD
     if record:
@@ -108,7 +117,7 @@ def run():
 
             _timer = cv2.getTickCount() # set timer to calculate processing frame rate
 
-            object_counter.count(frame)
+            object_counter.count(frame,frames_processed)
             output_frame = object_counter.visualize()
 
             if record:

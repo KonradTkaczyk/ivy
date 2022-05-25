@@ -19,7 +19,7 @@ NUM_CORES = multiprocessing.cpu_count()
 
 class ObjectCounter():
 
-    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color):
+    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color, datetime, frame_rate, output):
         self.frame = initial_frame # current frame of video
         self.detector = detector
         self.tracker = tracker
@@ -35,6 +35,9 @@ class ObjectCounter():
         self.counts = {counting_line['label']: {} for counting_line in counting_lines} # counts of objects by type for each counting line
         self.show_counts = show_counts
         self.hud_color = hud_color
+        self.datetime = datetime
+        self.frame_rate = frame_rate
+        self.output = output
 
         # create blobs from initial frame
         droi_frame = get_roi_frame(self.frame, self.droi)
@@ -47,7 +50,7 @@ class ObjectCounter():
     def get_blobs(self):
         return self.blobs
 
-    def count(self, frame):
+    def count(self, frame, frames_processed):
         self.frame = frame
 
         blobs_list = list(self.blobs.items())
@@ -58,8 +61,9 @@ class ObjectCounter():
         self.blobs = dict(blobs_list)
 
         for blob_id, blob in blobs_list:
+
             # count object if it has crossed a counting line
-            blob, self.counts = attempt_count(blob, blob_id, self.counting_lines, self.counts)
+            blob, self.counts = attempt_count(blob, blob_id, self.counting_lines, self.counts, frames_processed, self.datetime, self.frame_rate, self.output)
             self.blobs[blob_id] = blob
 
             # remove blob if it has reached the limit for tracking failures
